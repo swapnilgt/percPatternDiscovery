@@ -1,5 +1,6 @@
-sylbSimFolder=/home/swapnil/SMC/MasterThesis/sylbSimilarity/
+sylbSimFolder=/home/swapnil/SMC/MasterThesis/sylbSimilarity/results_mat
+sylbListFile=/home/swapnil/SMC/MasterThesis/sylbSimilarity/TablaDBstrokes
 transFolder=/home/swapnil/SMC/MasterThesis/transcriptionData/Results_Tabla38/02042015_Iso_7state_LM_mfcc_0_d_a/transcriptions/
 lblDir=/home/swapnil/Dropbox/SMC/Master_Thesis/TablaDB/lbl/
 onsDir=/home/swapnil/Dropbox/SMC/Master_Thesis/TablaDB/onsets/
-resultDir=/media/swapnil/Stuff/searchResults_38/
+resultDir=/home/swapnil/SMC/MasterThesis/results/

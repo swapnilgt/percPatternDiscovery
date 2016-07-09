@@ -15,6 +15,9 @@ transFolder=config['transFolder']
 lblDir=config['lblDir']
 onsDir=config['onsDir']
 resultDir=config['resultDir']
+sylbListFile=config['sylbListFile']
+
+print sylbListFile
 
 queryList = [['DHE','RE','DHE','RE','KI','TA','TA','KI','NA','TA','TA','KI','TA','TA','KI','NA'],['TA','TA','KI','TA','TA','KI','TA','TA','KI','TA','TA','KI','TA','TA','KI','TA'], ['TA','KI','TA','TA','KI','TA','TA','KI'], ['TA','TA','KI','TA','TA','KI'], ['TA', 'TA','KI', 'TA'],['KI', 'TA', 'TA', 'KI'], ['TA','TA','KI','NA'], ['DHA','GE','TA','TA']]
 queryLenCheck = [4,6,8,16]
@@ -23,6 +26,13 @@ for query in queryList:
     if len(query) not in queryLenCheck:
         print 'The query is not of correct length!!'
         sys.exit()
+
+# Checking if we want to run for baseline or not.
+baseline = False
+if "baseline" in sys.argv:
+    baseline = True
+
+
 
 #similarityListFile = os.path.join(sylbSimFolder,'simMatList.txt')
 #similarityList = [line.strip().split('.')[0] for line in open(similarityListFile)]
@@ -87,7 +97,7 @@ def getAccuracies(payload, tres = 70.0, fp = None):
         recall = None
     return (precision, recall, ptrInTransLen)
 
-def getUniqMatchesForAllComp(query, betaDir, beta, p, formula):
+def getUniqMatchesForAllComp(query, betaDir, beta, p, formula, baseline = False):
     ''' This method takes in the masterData, query, compare, beta and p and returns the uniqMatchesList for the entire masterData'''
     if not os.path.exists(betaDir):
         print 'The base director for logging does not exist.. Exiting' + str(betaDir)
@@ -97,9 +107,10 @@ def getUniqMatchesForAllComp(query, betaDir, beta, p, formula):
     for compData in masterData:
         compName = compData[2]
         fComp = open(os.path.join(betaDir,compName + '.log'), 'a')
-        uniqMatchesTrans = rlcs.getUniqMatches(compData[0][0], query, simObject, beta, p, fComp, formula)
-        # Enable this for baseline check !!
-        #uniqMatchesTrans = rlcs.getBaselinePatterns(compData[0][0], query, fComp)
+        if baseline is False:
+            uniqMatchesTrans = rlcs.getUniqMatches(compData[0][0], query, simObject, beta, p, fComp, formula)
+        else:
+            uniqMatchesTrans = rlcs.getBaselinePatterns(compData[0][0], query, fComp)
         uniqMatchesGT = rlcs.getGTPatterns(compData[1][0], query, fComp)
 
         dataPerComp.append((uniqMatchesTrans, uniqMatchesGT))
@@ -226,7 +237,7 @@ def runWithScoreTres(uniqMatchListPerQuery, queryList, betaDir, overlapTres):
     return result
 
 
-def runWithBeta(queryList, pDir, betaMin, betaMax, betaStep, p, overlapTres, formula):
+def runWithBeta(queryList, pDir, betaMin, betaMax, betaStep, p, overlapTres, formula, baseline = False):
     if not os.path.exists(pDir):
         print 'The base directory for logging does not exist.. Exiting' + str(pDir)
         sys.exit()
@@ -245,7 +256,7 @@ def runWithBeta(queryList, pDir, betaMin, betaMax, betaStep, p, overlapTres, for
 
         for query in queryList:
             # Should get data from both the transcription and the ground truth...
-            uniqMatchDataPerQuery = getUniqMatchesForAllComp(query, betaDir, beta, p, formula)
+            uniqMatchDataPerQuery = getUniqMatchesForAllComp(query, betaDir, beta, p, formula, baseline = baseline)
             uniqMatchListPerQuery.append(uniqMatchDataPerQuery)
 
         resScore = runWithScoreTres(uniqMatchListPerQuery, queryList, betaDir, overlapTres)
@@ -261,7 +272,7 @@ def runWithBeta(queryList, pDir, betaMin, betaMax, betaStep, p, overlapTres, for
     return result
 
 
-def runWithAllParams(queryList, logDir, betaMin = 0.01, betaMax = 0.99, betaStep = 0.05, pMax = 1.0, pStep = 0.05, overlapTres = 70.0, formula = None):
+def runWithAllParams(queryList, logDir, betaMin = 0.01, betaMax = 0.99, betaStep = 0.05, pMax = 1.0, pStep = 0.05, overlapTres = 70.0, formula = None, baseline = False):
 
     result = []
 
@@ -279,14 +290,16 @@ def runWithAllParams(queryList, logDir, betaMin = 0.01, betaMax = 0.99, betaStep
         if len(query) < minLenQ:
             minLenQ = len(query)
     p = 1.1 / minLenQ
-    p = 0.875
+    
+    if baseline is True:
+        p = 0.0
     
     while p <= pMax:
         print '$$$$$ Running iteration for a new p = '+ str(p)+' $$$$$'
         pDir = os.path.join(baseDir, 'p_' + str(p))
         os.makedirs(pDir) # Creating the directory for the p value
         pResult = runWithBeta(queryList, pDir, betaMin = betaMin, betaMax = betaMax,\
-                betaStep = betaStep, p = p, overlapTres = overlapTres, formula = formula)
+                betaStep = betaStep, p = p, overlapTres = overlapTres, formula = formula, baseline = baseline)
         result.append((p, pResult))
         p += pStep
 
@@ -301,25 +314,30 @@ def runWithAllParams(queryList, logDir, betaMin = 0.01, betaMax = 0.99, betaStep
 
 
 if __name__ == '__main__':
-
+    
     for similarity in similarityList:
         if similarity in ignrSimList:
             print 'Ignoring similarity..Going to next similarity measure!!'
             continue
-        simDict = ut.getSimilarityDict(os.path.join(sylbSimFolder, 'TablaDBstrokes'),os.path.join(sylbSimFolder, 'results_mat',similarity +'.mat'))
+        simDict = ut.getSimilarityDict(sylbListFile, os.path.join(sylbSimFolder, similarity + '.mat'))
         #simDict = ut.readPickle(os.path.join('/home/swapnil/SMC/MasterThesis/gitPercPatterns/code/sylbSimilarity/sim', similarity + '.pkl'))
         simTresMax = 0.9
         simTresStep = 0.3
-        simTres = 0.9
+        simTres = 0.3
+        
+        # In case the baseline is true.
+        if baseline is True:
+            simTres = 0.9
 
         print 'Running for similarity:' + similarity 
         formula = 2
         while simTres <= simTresMax:
             resultSimDir = os.path.join(resultDir, 'formula' + str(formula), similarity, similarity + '_' + str(simTres))
             simObject = ut.Similarity(simDict, simTres) # second arguments is the threshold for the distance between the two sylbls.
-            #runWithAllParams(queryList, resultSimDir, formula = formula)
-            # Customized..
-            runWithAllParams(queryList, resultSimDir, formula = formula, betaMin = 0.76, betaMax = 0.76, pMax = 0.875)
+            if baseline is False:
+                runWithAllParams(queryList, resultSimDir, formula = formula, baseline = baseline)
+            else:
+                runWithAllParams(queryList, resultSimDir, formula = formula, betaMin = 0.0, betaMax = 0.0, pMax = 0.0, baseline = baseline)
             print resultSimDir
             print simObject.tres
             simTres += simTresStep
