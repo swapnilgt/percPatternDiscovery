@@ -19,7 +19,7 @@ This file is present in the location `rlcs/config`.This file consists of the inf
   6. **resultDir**: The result where you want to dump the result of the pattern search experiments.
 
 
-# How to run the code?
+## How to run the code?
 There are few variable that you need to set in the `run.py` before running the code. They are as follows:
   * `queryList`: This is the list of the query patterns for which we want to run the RLCS experiment.
   * `queryLenCheck`: This represents the set of lenghts of the different query patterns mentioned in `queryList`. This is just a check to ensure that the length of the pattern is actually what is being mentioned. Although, it is not a robust as we would expect but is just an initial check on the query pattern list.
