@@ -16,6 +16,18 @@ This file is present in the location `rlcs/config`.This file consists of the inf
   3. **transFolder**: Folder where we have the results for the automatic transcriptions of the data.
   4. **lblDir**: Directories having the files relevant to different audio files in the dataset. These files are with the extension `.lab` and contain the syllables in the composition with each syllable listed on a new line.
   5. **onsDir**: Directories having the files relevant to different audio files in the dataset. These files are with the extension `.csv` and contain the time stamp of each syllable in the composition(corresponding to the file in **lblDir**) with each timeStamp listed on a new line.
-  6. **resultDir**: The result where you want to dump the result of the pattern search experiments. 
+  6. **resultDir**: The result where you want to dump the result of the pattern search experiments.
+
+
+# How to run the code?
+There are few variable that you need to set in the `run.py` before running the code. They are as follows:
+  * `queryList`: This is the list of the query patterns for which we want to run the RLCS experiment.
+  * `queryLenCheck`: This represents the set of lenghts of the different query patterns mentioned in `queryList`. This is just a check to ensure that the length of the pattern is actually what is being mentioned. Although, it is not a robust as we would expect but is just an initial check on the query pattern list.
+  * `similarityList`: This is the list of the different similarity types that we want to run experiment with. All the names in this list should have a corresponding `.mat` file present in **sylbSimFolder** (as mentioned earlier).
+
+To run the code, these are the commands:
+
+**For baseline**: `python run.py baseline`
+**For complete grid search**: ``
 
 
