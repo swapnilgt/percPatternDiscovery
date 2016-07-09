@@ -1,7 +1,7 @@
 # Introduction
 This repository contains the code for running the pattern search experiments as mentioned in the article titled **Discovery of syllabic percussion patterns in tabla solo recordings** published in [ISMIR 2015](http://ismir2015.uma.es/program_and_papers_ismir2015.html). Here we will explain the necessary steps and configurations that you can do to run the code for pattern search results. To understand the variables related to the code mentioned below, refer to the [paper](http://repositori.upf.edu/handle/10230/25697?show=full).
 
-# Prerequisites
+# Dependencies
 Following are the python dependencies that you would need to run the code:
   * [matplotlib](http://matplotlib.org/)
   * [numpy](http://www.numpy.org/)
