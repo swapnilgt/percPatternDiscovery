@@ -2,7 +2,7 @@
 This repository contains the code for running the pattern search experiments as mentioned in the article titled **Discovery of syllabic percussion patterns in tabla solo recordings** published in [ISMIR 2015](http://ismir2015.uma.es/program_and_papers_ismir2015.html). Here we will explain the necessary steps and configurations that you can do to run the code for pattern search results. To understand the variables related to the code mentioned below, refer to the [paper](http://repositori.upf.edu/handle/10230/25697?show=full).
 
 # Prerequisites
-Following are the prerequisites that you woould need to run the code:
+Following are the python dependencies that you would need to run the code:
   * [matplotlib](http://matplotlib.org/)
   * [numpy](http://www.numpy.org/)
   * [scipy](https://www.scipy.org/)
@@ -27,7 +27,7 @@ There are few variable that you need to set in the `run.py` before running the c
 
 To run the code, these are the commands:
 
-**For baseline**: `python run.py baseline`
-**For complete grid search**: ``
+  * **For baseline**: `python run.py baseline` (from the terminal) 
+  * **For complete grid search**: `python run.py` (from the terminal)
 
 
