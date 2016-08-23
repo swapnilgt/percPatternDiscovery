@@ -1,4 +1,5 @@
 function [strtTime endTime label logLik] = getDecodedLabels(recfile)
+% Extracts information from decoder output file into a more MATLAB friendly format
 fp = fopen(recfile,'rt');
 A = textscan(fp,'%s','delimiter','\n');
 fclose(fp);

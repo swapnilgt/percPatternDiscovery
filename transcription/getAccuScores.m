@@ -1,4 +1,5 @@
 function [Corr Accu H D S I N] = getAccuScores(str)
+% Extracts performance measures from HTK output 
 try
     A = textscan(str, '%s', 'delimiter', sprintf('\n'));    % Split by lines
     A = A{1};

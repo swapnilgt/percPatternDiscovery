@@ -1,8 +1,8 @@
+function sts = ExecOneCommand(logFile,ipstr,magicstr)
 % Runs a single HTK command string
 % Done only to avoid code repetition
 % To be called only from the parent m-file
 % Parent: exptWrapper.m
-function sts = ExecOneCommand(logFile,ipstr,magicstr)
 fprintf(logFile,['\n>>', ipstr, '\n', magicstr '\n']);
 [sts res] = system(ipstr);
 fprintf(logFile, res);
