@@ -2,20 +2,19 @@
 
 This repository contains the code for pattern discovery from percussion solo recordings. The approach uses a transcription followed a search for a preset of patterns. The algorithm is demonstrated with tabla solo recordings and presented in the paper, 
 
-S. Gupta, A. Srinivasamurthy, M. Kumar, H. Murthy, X. Serra, [Discovery of Syllabic Percussion Patterns in Tabla Solo Recordings](http://ismir2015.uma.es/program_and_papers_ismir2015.html), Proceedings of the 16th International Society for Music Information Retrieval Conference (ISMIR 2015) (pp. 385-391), 2015, Malaga, Spain.
+S. Gupta, A. Srinivasamurthy, M. Kumar, H. Murthy, X. Serra, [Discovery of Syllabic Percussion Patterns in Tabla Solo Recordings](http://ismir2015.uma.es/program_and_papers_ismir2015.html), Proceedings of the 16th International Society for Music Information Retrieval Conference (ISMIR 2015) (pp. 385-391), 2015, Malaga, Spain. See the [companion page](http://compmusic.upf.edu/ismir-2015-tabla) for further information. The Mulgaonkar Tabla Solo (MTS) dataset described in the paper is explained further at [http://compmusic.upf.edu/tabla-solo-dataset](http://compmusic.upf.edu/tabla-solo-dataset). 
 
-See the [companion page](http://compmusic.upf.edu/ismir-2015-tabla) for further information. 
+The repository is organized into two parts - transcription and search. Transcription code is in transcription/ folder. Pattern search code with RLCS (Rough Longest Common Subsequence) is in the folder rlcs/. The other two folders data/ and results/ are placeholders for default locations for dataset and results, respectively. 
 
-The Mulgaonkar Tabla Solo (MTS) dataset described in the paper is explained further at [http://compmusic.upf.edu/tabla-solo-dataset](http://compmusic.upf.edu/tabla-solo-dataset). 
-
-The repository is organized into two parts - transcription and search. Transcription code is in <root>/transcription/ folder. Pattern search code with RLCS (Rough Longest Common Subsequence) is in the folder <root>/rlcs/. The other two folders <root>/data/ and <root>/results/ are placeholders for default locations for dataset and results, respectively. 
-
-Here we will explain the necessary steps and configurations that you can do to run the code for pattern transcription and search. To understand the method and variables in the code mentioned below, refer to the [paper](http://mtg.upf.edu/node/3277).
+Here we will explain the necessary steps and configurations that you can do to run the code for pattern transcription and search. To understand the method and variables in the code mentioned below, refer to the article listed above. Transcription and search can be used independently of each other if the goal is only one of the tasks. Hence they are organized into separate folders and work independently. 
 
 # Percussion transcription
+The percussion transcription code uses the [hidden Markov model toolkit (HTK)](http://htk.eng.cam.ac.uk/) and has a few helper scripts in MATLAB to run complete transcription experiments. Detailed help is provided in the file transcription/exptWrapper.m 
+
+The only dependency to run the transcription experiments is HTK. 
 
 # Pattern Search
-
+The pattern search code is the rlcs/ folder. 
 ## Dependencies
 Following are the python dependencies that you would need to run the code:
   * [matplotlib](http://matplotlib.org/)
@@ -32,7 +31,6 @@ This file is present in the location `rlcs/config`.This file consists of the inf
   4. **lblDir**: Directories having the files relevant to different audio files in the dataset. These files are with the extension `.lab` and contain the syllables in the composition with each syllable listed on a new line.
   5. **onsDir**: Directories having the files relevant to different audio files in the dataset. These files are with the extension `.csv` and contain the time stamp of each syllable in the composition(corresponding to the file in **lblDir**) with each timeStamp listed on a new line.
   6. **resultDir**: The result where you want to dump the result of the pattern search experiments.
-
 
 ### How to run the code?
 There are few variable that you need to set in the `run.py` before running the code. They are as follows:
