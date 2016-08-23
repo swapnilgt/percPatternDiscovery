@@ -1,102 +1,130 @@
 % This is a script file to run the percussion pattern transcription
-% experiments. It is optimized to run percussion transcription on tabla
+% experiments. The experiments use the HMM toolkit (HTK), which can be
+% obtained from http://htk.eng.cam.ac.uk/ The script assumes a working copy
+% of HTK is installed. 
+% 
+% The experiments do a leave one out cross validation using HMM models obtained 
+% from isolated HMM initialization for each syllable, using time aligned
+% transcriptions. 
+% 
+% The experiments are optimized to run percussion transcription on tabla
 % solo recordings on the Arvind Mulgaonkar Tabla Solo (MTS) dataset 
 % More details on the dataset can be obtained from: 
 % http://compmusic.upf.edu/tabla-solo-dataset
 % 
-% The experiments use the HMM toolkit (HTK), with multiple leave one out 
-% cross validation experiments. The code uses isolated training. 
-
-% The experiments assume that the following pre-processing steps for the
-% data are already done, with the following structure of the dataset
-% 1. All the wav files  a single folder 'poolData/wav'
-% 2. Run the preprocess syllableMapping, scoreParserWrapper.m
-% 5. Then make a list of wav files 'HCopyList.txt' use HCopy to generate 
-% the features. 
-% Use HCopy.config in the current folder
+% These experiments were described in the paper: 
+% S. Gupta, A. Srinivasamurthy, M. Kumar, H. Murthy, X. Serra, Discovery of 
+% Syllabic Percussion Patterns in Tabla Solo Recordings, Proceedings of the 
+% 16th International Society for Music Information Retrieval Conference 
+% (ISMIR 2015) (pp. 385-391), 2015, Malaga, Spain.
+% See http://compmusic.upf.edu/ismir-2015-tabla
 % 
-% We have now prepared the data. Next we initialize the files needed by HTK
-% in the present working directory. 
-% 6. Make a list of feature files, call it listFeatFiles.txt with FULL path
-% to the feature files
-% 7. Create a dictionary file called dictionary.txt with all the syllables
-% in the label files. Make sure dictionary is alphabetical. Create a
-% grammar file called grammar.txt
-% 8. Create a prototype HMM definition file and call it 'proto.hmm'
-% 9. Make a list of syllables for HMMs, and call it hmmList
-% 10. Create the HCompV config file
-% 11. If a HHEd update is needed, then store the mixing commands in mixmcds.hhed
+% The experiments assume that the data has be obtained separately and the 
+% following data pre-processing steps for the data are already done. <root>
+% refers to the percPatternDiscovery folder
+% 1. Copy the contents of the setup folder containing some setup related 
+%    information in the dataset into <root>/transcriptions/setup/
+% 2. Extract the features from the audio files using HCopy. e.g. you can
+%    use HCopy_0_D_A.config file to generate MFCC_0_D_A features. 
+% 
+% The data is now prepared. We then initialize the files needed by HTK
+% in the <root>/transcriptions/setup/ folder. The following files are
+% already provided with the dataset, but if not, generate them. 
+% 3. Generate a list of files or edit the paths to the feature files 
+%    listFeatFiles_mfcc_0_d_a.txt accordingly. Use FULL paths. 
+% 4. Create the dictionary files (dictionary.txt, dictionaryExt.txt) and
+%    the HMM list file (hmmListExt). Make sure dictionary is alphabetical. 
+% 5. Create a grammar file called grammar.txt
+% 6. Create a prototype HMM definition file and call it 'proto_<featureType>'
+% 7. Create the HCompV config file
+% 8. If a HMM topology update is needed, then store the mixing commands in 
+%    mixmcds.hhed
+% 
 % All set now!
 % 
-% The wrapper does the following steps:
-% 1. Generates a dictionary and grammar network
-% 2. Does a flat start of HMM based on the prototype HMM using HCompV
-% 3. Replicates the HMM for each of the syllables
-% 4. An embedded reestimation, along with HHed if needed
-% 5. Testing using HVite and HResults
-% 6. Prepare a log file summarising results
+% This script does the following steps: 
+% 1. Generates a dictionary and grammar network, along with a bigram language
+%    model
+% 2. Does a isolated start of each syllable HMM using HInit and the time 
+%    aligned transcriptions
+% 3. Using the initialized HMMs, does an embedded reestimation, along with 
+%    updates to HMM shapes using HHed if needed
+% 5. Testing using HVite and HResults (Bothy training and test data 
+%    performance is measured)
+% 6. Prepare a log file summarising actions and results
 % 
-% Apart from this, it does a leave one out cross validation, with N
-% experiments per validation fold. Stores all the results
+% The script does a leave one out cross validation (CV), with many (user set)
+% experiments per validation fold. Stores all the results. 
 clear
 clc
 close all;
 %% Add paths if needed
-NumTrainIter = 2;
-NumMixIt = 2;
-NumExptPerFold = 1;
+NumTrainIter = 10;  % Training iterations 
+NumMixIt = 2;       % Mix iterations using HHed
+NumExptPerFold = 1; % Experiments per CV fold
 %% Initialize the filenames
 basepath = './setup/'; % Empty string if this m-file is the current working directory
-featExt = 'mfcc_0_d_a';   % future
-exptPath = ['../results' filesep featExt filesep];
-dataPath = '../data/';
-labTimedPath = [dataPath 'lblTimedLang' filesep];
-labPath = [dataPath 'lblLang' filesep];
+featExt = 'mfcc_0_d_a';   % feature
+exptPath = ['../results' filesep featExt filesep]; % All results stored here
+dataPath = '../data/'; % The data is assumed to be stored here
+labTimedPath = [dataPath 'lblTimedLang' filesep]; % Label files in data
+labPath = [dataPath 'lblLang' filesep]; 
 if ~isdir(exptPath)
-    mkdir(exptPath);
+    mkdir(exptPath);        % Create the result folder
 else
-    rmdir(exptPath,'s');    % Remove all old files
+    rmdir(exptPath,'s');    % Remove all old files and start afresh
     mkdir(exptPath);
 end
-%
+% Syllable list
 hmmlist = [basepath, 'hmmListExt'];
 fp = fopen(hmmlist,'rt');
 syl = textscan(fp,'%s\n');
-syl = syl{1};
+syl = syl{1};   
 fclose(fp);
+% HMM prototype
 proto = [basepath, 'proto_' featExt];
+% Flat start parameters
 compvconfig = [basepath, 'HCompV.config'];
+% Mixing parameters
 mixcmds = [basepath, 'mixcmds.hhed'];
+% Syllable alphabet
 alphabetFile = [basepath, 'alphabet.txt'];
 alphabetExtFile = [basepath, 'alphabetExt.txt'];
+% Dictionaries
 dictFile = [basepath, 'dictionary.txt'];
 dictExtFile = [basepath, 'dictionaryExt.txt'];
+dictOutFile = [exptPath, 'dictionary.dic'];
+% Log files
 logDumpFile = [exptPath, 'simulation.log'];
+% Feature files
 listFeatFiles = [basepath 'listFeatFiles_' featExt '.txt'];
 copyfile(listFeatFiles,exptPath);   % Keep a copy of which files were used
+% Grammar
 gramFile = [exptPath, 'grammar.net'];
-dictOutFile = [exptPath, 'dictionary.dic'];
+% Language model
+biGramFile = [exptPath 'biGramModel.lm'];
+% Temporary HMM files storage
 tempHMMdir = [exptPath, 'allHMMsTemp/'];
 if ~isdir(tempHMMdir)
     mkdir(tempHMMdir) 
 end
+% HMMs
 initHMMfull = [exptPath, 'initAllHMM.hmm'];
 opHMMfull = [exptPath, 'trainedHMM.hmm'];
 mlFile = [labPath 'master.lab'];
-biGramFile = [exptPath 'biGramModel.lm'];
-%
+% Housekeeping
 tempTrainFile = [basepath 'tempTrainList.txt'];
 tempScratchFile = [basepath 'tempScratch.txt'];
 magicstr = '@@@@@';
 msg = 'Start';      % Some message to be written to log
-% Read the filelist
+% Read the filelist of features
 ffid = fopen(listFeatFiles,'rt');
 temp = textscan(ffid,'%s\n');
 featFiles = temp{1};
 clear temp;
 fclose(ffid);
 % End of definitions
-%% Begin Experiment
+%% Begin Experiments
 % Open log file
 logFile = fopen(logDumpFile,'a+t');
 if logFile == 0
