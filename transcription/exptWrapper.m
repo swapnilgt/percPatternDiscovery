@@ -44,7 +44,7 @@ NumTrainIter = 2;
 NumMixIt = 2;
 NumExptPerFold = 1;
 %% Initialize the filenames
-basepath = './expfiles/'; % Empty string if this m-file is the current working directory
+basepath = './setup/'; % Empty string if this m-file is the current working directory
 featExt = 'mfcc_0_d_a';   % future
 exptPath = ['../results' filesep featExt filesep];
 dataPath = '../data/';
