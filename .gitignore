@@ -55,3 +55,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# data
+data/*
+!data/README.txt
+results/*
+!results/README.txt
