@@ -1,7 +1,9 @@
 % This is a script file to run the percussion pattern transcription
-% experiments on the Arvind Mulgaonkar Tabla dataset
-% The dataset can be obtained from: 
-%
+% experiments. It is optimized to run percussion transcription on tabla
+% solo recordings on the Arvind Mulgaonkar Tabla Solo (MTS) dataset 
+% More details on the dataset can be obtained from: 
+% http://compmusic.upf.edu/tabla-solo-dataset
+% 
 % The experiments use the HMM toolkit (HTK), with multiple leave one out 
 % cross validation experiments. The code uses isolated training. 
 

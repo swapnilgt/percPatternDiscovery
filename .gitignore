@@ -61,3 +61,6 @@ data/*
 !data/README.txt
 results/*
 !results/README.txt
+transcription/setup/*
+!transcription/setup/README.txt
+
